@@ -75,19 +75,50 @@ def analyze_segments(customers, sales, products):
     ).reset_index()
     
     # Merge with customer data
+    # Only include columns that actually exist in customers
+    cust_cols = ['customer_id', 'age', 'city']
+    if 'client_type' in customers.columns:
+        cust_cols.append('client_type')
     customer_stats = customer_stats.merge(
-        customers[['customer_id', 'age', 'city', 'client_type']], 
-        on='customer_id', 
+        customers[cust_cols],
+        on='customer_id',
         how='left'
     )
+    # Ensure client_type exists for downstream logic
+    if 'client_type' not in customer_stats.columns:
+        customer_stats['client_type'] = 'Unknown'
     
     # Assign segments based on RFM (Recency, Frequency, Monetary)
     # This is a simplified version - in a real scenario, you might use the clusters from M3
-    customer_stats['segment'] = pd.qcut(
-        customer_stats['total_spent'], 
-        q=3, 
-        labels=['Low Value', 'Medium Value', 'High Value']
-    )
+    # Make robust in case of non-unique bin edges or limited unique values
+    labels = ['Low Value', 'Medium Value', 'High Value']
+    try:
+        # Try qcut first
+        customer_stats['segment'] = pd.qcut(
+            customer_stats['total_spent'],
+            q=3,
+            labels=labels
+        )
+    except Exception:
+        # Fallback: compute quantiles manually and use cut with unique bin edges
+        qs = customer_stats['total_spent'].quantile([0.0, 1/3, 2/3, 1.0]).values
+        # Ensure strictly increasing bin edges
+        bins = []
+        for v in qs:
+            if not bins or v > bins[-1]:
+                bins.append(v)
+        # If after deduplication we have fewer than 2 bins, place everyone in a single segment
+        if len(bins) <= 2:
+            customer_stats['segment'] = pd.Series(['Medium Value'] * len(customer_stats), index=customer_stats.index, dtype='category')
+        else:
+            # Number of labels must be len(bins)-1
+            use_labels = labels[:len(bins)-1]
+            # If only two bins -> one label, map to Medium; if three bins -> Low/High; if four -> Low/Medium/High
+            if len(use_labels) == 1:
+                use_labels = ['Medium Value']
+            elif len(use_labels) == 2:
+                use_labels = ['Low Value', 'High Value']
+            customer_stats['segment'] = pd.cut(customer_stats['total_spent'], bins=bins, labels=use_labels, include_lowest=True)
     
     return customer_stats
 
@@ -95,18 +126,28 @@ def create_personas(customer_stats):
     """Create detailed customer personas based on segments."""
     personas = {}
     
-    for segment in customer_stats['segment'].unique():
+    # Drop NaN segments if any
+    valid_segments = [s for s in customer_stats['segment'].dropna().unique()]
+    for segment in valid_segments:
         segment_data = customer_stats[customer_stats['segment'] == segment]
+        
+        # Safe getters for mode values
+        def safe_mode(series, fallback='Unknown'):
+            try:
+                m = series.mode(dropna=True)
+                return m.iloc[0] if len(m) else fallback
+            except Exception:
+                return fallback
         
         persona = {
             'segment': segment,
             'count': len(segment_data),
-            'avg_age': segment_data['age'].mean(),
+            'avg_age': segment_data['age'].mean() if 'age' in segment_data.columns else float('nan'),
             'avg_spend': segment_data['total_spent'].mean(),
             'avg_orders': segment_data['purchase_count'].mean(),
-            'top_city': segment_data['city'].mode()[0],
-            'top_category': segment_data['favorite_category'].mode()[0],
-            'common_client_type': segment_data['client_type'].mode()[0]
+            'top_city': safe_mode(segment_data['city']) if 'city' in segment_data.columns else 'Unknown',
+            'top_category': safe_mode(segment_data['favorite_category']) if 'favorite_category' in segment_data.columns else 'Unknown',
+            'common_client_type': safe_mode(segment_data['client_type']) if 'client_type' in segment_data.columns else 'Unknown'
         }
         
         personas[segment] = persona
@@ -145,17 +186,18 @@ def generate_report(personas, output_file='output/customer_personas_report.txt')
     """Generate a text report of customer personas."""
     os.makedirs(os.path.dirname(output_file), exist_ok=True)
     
-    with open(output_file, 'w') as f:
+    with open(output_file, 'w', encoding='utf-8') as f:
         f.write("CUSTOMER PERSONAS REPORT\n")
         f.write("Generated on: {}\n\n".format(datetime.now().strftime('%Y-%m-%d %H:%M:%S')))
         
+        total = sum(p['count'] for p in personas.values()) or 1
         for segment, persona in personas.items():
             f.write("="*50 + "\n")
             f.write(f"PERSONA: {segment} CUSTOMERS\n")
             f.write("="*50 + "\n\n")
             
             f.write(f"Profile:\n")
-            f.write(f"- Segment Size: {persona['count']} customers ({persona['count']/sum(p['count'] for p in personas.values()):.1%} of total)\n")
+            f.write(f"- Segment Size: {persona['count']} customers ({persona['count']/total:.1%} of total)\n")
             f.write(f"- Average Age: {persona['avg_age']:.1f} years\n")
             f.write(f"- Average Total Spend: {persona['avg_spend']:,.0f} Ar\n")
             f.write(f"- Average Number of Orders: {persona['avg_orders']:.1f}\n")
