@@ -60,18 +60,126 @@ def load_data():
         logger.error(traceback.format_exc())
         return None, None, None
 
+def standardize_products(products: pd.DataFrame) -> pd.DataFrame:
+    """Ensure products has 'product_id' and 'category' columns.
+    Try common alternatives and create sensible fallbacks."""
+    df = products.copy()
+    cols = {c: c.lower() for c in df.columns}
+    df.columns = [c.lower() for c in df.columns]
+
+    # Find an ID-like column
+    id_alts = ['product_id', 'sku', 'id', 'code', 'productcode', 'product id', 'product']
+    id_col = next((c for c in id_alts if c in df.columns), None)
+    if id_col is None:
+        # Create a synthetic id if none exists
+        df['product_id'] = [f"P{i+1}" for i in range(len(df))]
+        logger.warning("M4: No product_id-like column found in products; created synthetic 'product_id'.")
+    else:
+        df['product_id'] = df[id_col]
+
+    # Find a category-like column
+    cat_alts = ['category', 'categorie', 'type', 'product_category']
+    cat_col = next((c for c in cat_alts if c in df.columns), None)
+    if cat_col is None:
+        # Try using name/description as a proxy; else Unknown
+        name_alts = ['name', 'product_name', 'designation', 'label']
+        name_col = next((c for c in name_alts if c in df.columns), None)
+        if name_col is not None:
+            df['category'] = df[name_col]
+            logger.warning("M4: No 'category' found; using product name as category proxy.")
+        else:
+            df['category'] = 'Unknown'
+            logger.warning("M4: No 'category' or name-like column found; set category to 'Unknown'.")
+    else:
+        df['category'] = df[cat_col]
+
+    # Keep only needed columns to avoid surprises
+    return df[['product_id', 'category']].copy()
+
+def standardize_sales(sales: pd.DataFrame) -> pd.DataFrame:
+    """Ensure sales has required columns and consistent dtypes for merge/statistics."""
+    df = sales.copy()
+    df.columns = [c.lower() for c in df.columns]
+
+    # product_id for join
+    pid_alts = ['product_id', 'sku', 'item_id', 'product', 'product code']
+    pid = next((c for c in pid_alts if c in df.columns), None)
+    if pid is None:
+        logger.warning("M4: No product reference in sales; creating placeholder 'product_id' = 'UNKNOWN'.")
+        df['product_id'] = 'UNKNOWN'
+    else:
+        df['product_id'] = df[pid]
+
+    # customer_id
+    cid_alts = ['customer_id', 'client_id', 'cust_id']
+    cid = next((c for c in cid_alts if c in df.columns), None)
+    if cid is None:
+        # Create synthetic if missing
+        df['customer_id'] = [f"C{i+1}" for i in range(len(df))]
+        logger.warning("M4: No customer_id in sales; created synthetic 'customer_id'.")
+    else:
+        df['customer_id'] = df[cid]
+
+    # order_id
+    oid_alts = ['order_id', 'id', 'sale_id', 'transaction_id']
+    oid = next((c for c in oid_alts if c in df.columns), None)
+    if oid is None:
+        df['order_id'] = range(1, len(df) + 1)
+        logger.warning("M4: No order_id in sales; generated sequential 'order_id'.")
+    else:
+        df['order_id'] = df[oid]
+
+    # order_date
+    date_alts = ['order_date', 'date', 'created_at']
+    did = next((c for c in date_alts if c in df.columns), None)
+    if did is None:
+        df['order_date'] = pd.NaT
+    else:
+        df['order_date'] = pd.to_datetime(df[did], errors='coerce')
+
+    # amounts
+    if 'total_amount' not in df.columns:
+        # Try compute from quantity * unit_price
+        qty = next((c for c in ['quantity', 'qty', 'qte'] if c in df.columns), None)
+        up = next((c for c in ['unit_price', 'price', 'prix'] if c in df.columns), None)
+        if qty and up:
+            df['total_amount'] = pd.to_numeric(df[qty], errors='coerce') * pd.to_numeric(df[up], errors='coerce')
+        else:
+            df['total_amount'] = pd.to_numeric(df.get('total_amount', 0), errors='coerce')
+
+    # Ensure types as strings for merge keys
+    df['product_id'] = df['product_id'].astype(str)
+    df['customer_id'] = df['customer_id'].astype(str)
+    return df
+
 def analyze_segments(customers, sales, products):
     """Analyze customer segments and create personas."""
+    # Safe getter for mode values
+    def safe_mode(series, fallback='Unknown'):
+        try:
+            if series.empty:
+                return fallback
+            m = series.mode(dropna=True)
+            return m.iloc[0] if len(m) > 0 else fallback
+        except Exception:
+            return fallback
+    
+    # Normalize products and sales schemas for robust merging
+    products_std = standardize_products(products)
+    sales_std = standardize_sales(sales)
+
+    # Align dtype for join
+    products_std['product_id'] = products_std['product_id'].astype(str)
     # Merge sales with products to get category information
-    sales = sales.merge(products[['product_id', 'category']], on='product_id', how='left')
+    sales_std = sales_std.merge(products_std[['product_id', 'category']], on='product_id', how='left')
     
     # Calculate purchase frequency and recency
-    customer_stats = sales.groupby('customer_id').agg(
+    customer_stats = sales_std.groupby('customer_id').agg(
         total_spent=('total_amount', 'sum'),
         purchase_count=('order_id', 'nunique'),
         avg_order_value=('total_amount', 'mean'),
         last_purchase=('order_date', 'max'),
-        favorite_category=('category', lambda x: x.mode()[0] if not x.empty else 'Unknown')
+        favorite_category=('category', safe_mode)  # Use the safe_mode function here
     ).reset_index()
     
     # Merge with customer data

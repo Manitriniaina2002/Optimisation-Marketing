@@ -92,7 +92,7 @@ def section_personas():
         p = os.path.join('output', name)
         with cols[i % 2]:
             if os.path.exists(p):
-                st.image(p, caption=name, use_column_width=True)
+                st.image(p, caption=name, use_container_width=True)
             else:
                 st.info(f"{name} non généré.")
     report_path = os.path.join('output', 'customer_personas_report.txt')
