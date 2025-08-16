@@ -80,6 +80,17 @@ if 'data_loaded' not in st.session_state:
     st.session_state.products_df = None
     st.session_state.documents = []
     st.session_state.processed_docs = False
+# Ensure defaults exist even if other pages set only some keys
+for k, v in {
+    'data_loaded': False,
+    'customers_df': None,
+    'orders_df': None,
+    'marketing_df': None,
+    'products_df': None,
+    'documents': [],
+    'processed_docs': False,
+}.items():
+    st.session_state.setdefault(k, v)
 
 # Fonction pour valider les identifiants uniques
 def check_unique_ids(df, id_column, file_type):
@@ -252,7 +263,8 @@ with st.expander("📊 Données à analyser", expanded=True):
         st.markdown("### 📦 Données de commandes")
         
         # Avertissement si les produits ne sont pas encore chargés
-        if st.session_state.products_df is None:
+        products_df = st.session_state.get('products_df')
+        if products_df is None:
             st.info("💡 **Conseil** : Pour une meilleure expérience, téléchargez d'abord le fichier produits (tshirts.csv) "
                    "dans l'onglet **👕 Produits** ci-dessous. Cela permettra de compléter automatiquement les prix manquants "
                    "dans le fichier de commandes.")
@@ -335,8 +347,8 @@ with st.expander("📊 Données à analyser", expanded=True):
                                 st.warning(f"⚠️ {len(invalid_customers)} customer_id non présents dans le fichier clients.")
                         
                         # Vérifier la cohérence avec les produits
-                        if st.session_state.products_df is not None:
-                            invalid_products = set(orders_df['tshirt_id']) - set(st.session_state.products_df['tshirt_id'])
+                        if products_df is not None:
+                            invalid_products = set(orders_df['tshirt_id']) - set(products_df['tshirt_id'])
                             if invalid_products:
                                 st.warning(f"⚠️ {len(invalid_products)} tshirt_id non présents dans le fichier produits.")
                         
@@ -354,8 +366,8 @@ with st.expander("📊 Données à analyser", expanded=True):
                                 price_needs_filling = True
                         
                         if price_needs_filling and 'tshirt_id' in orders_df.columns:
-                            if st.session_state.products_df is not None:
-                                price_map = dict(zip(st.session_state.products_df['tshirt_id'], st.session_state.products_df['price']))
+                            if products_df is not None:
+                                price_map = dict(zip(products_df['tshirt_id'], products_df['price']))
                                 orders_df['price'] = orders_df['tshirt_id'].map(price_map)
                                 price_filled = True
                                 if orders_df['price'].isna().any():
@@ -375,14 +387,14 @@ with st.expander("📊 Données à analyser", expanded=True):
                             else:
                                 st.error("❌ Impossible de calculer la colonne 'amount' car toutes les valeurs de 'price' ou 'quantity' sont invalides. "
                                          "Veuillez vérifier que ces colonnes contiennent des valeurs numériques valides (ex. '19.99' au lieu de 'N/A').")
-                                if st.session_state.products_df is None:
+                                if st.session_state.get('products_df') is None:
                                     st.info("💡 **Solution recommandée** : Téléchargez le fichier produits (tshirts.csv) dans l'onglet '👕 Produits' "
                                            "pour que les prix soient automatiquement récupérés à partir des informations produit.")
                         
                         # Vérifier si amount est valide
                         if 'amount' not in orders_df.columns or orders_df['amount'].isna().all():
                             error_msg = "❌ Impossible de déterminer la colonne de montant. "
-                            if st.session_state.products_df is None:
+                            if products_df is None:
                                 error_msg += ("Veuillez soit :\n"
                                              "1. Télécharger le fichier 'tshirts.csv' dans l'onglet '👕 Produits' pour utiliser les prix des produits, OU\n"
                                              "2. Corriger les colonnes 'price' et 'quantity' dans votre fichier orders.csv pour qu'elles contiennent des valeurs numériques valides")
@@ -504,6 +516,7 @@ with st.expander("📊 Données à analyser", expanded=True):
                                 channel_dist = marketing_df['channel'].value_counts()
                                 st.bar_chart(channel_dist)
                             
+
             except pd.errors.ParserError:
                 st.error("❌ Erreur de parsing du fichier CSV. Vérifiez le format et le séparateur (par exemple, utilisez ';' au lieu de ',').")
             except UnicodeDecodeError:
@@ -581,6 +594,7 @@ with st.expander("📊 Données à analyser", expanded=True):
                                 category_dist = products_df['category'].value_counts()
                                 st.bar_chart(category_dist)
                             
+
             except pd.errors.ParserError:
                 st.error("❌ Erreur de parsing du fichier CSV. Vérifiez le format et le séparateur (par exemple, utilisez ';' au lieu de ',').")
             except UnicodeDecodeError:
