@@ -46,7 +46,17 @@ if customers_df is None or orders_df is None:
 
 # Afficher les colonnes disponibles pour le débogage
 st.write("Colonnes disponibles dans les données de commandes:", orders_df.columns.tolist())
-st.write("Types de données dans les commandes:", orders_df.dtypes)
+# Convertir les dtypes en chaînes pour éviter les erreurs de sérialisation Arrow
+try:
+    dtypes_str = orders_df.dtypes.astype(str)
+    dtypes_df = pd.DataFrame({
+        'Colonne': dtypes_str.index,
+        'Type': dtypes_str.values
+    })
+    st.dataframe(dtypes_df, use_container_width=True)
+except Exception:
+    # Fallback simple
+    st.write("Types de données dans les commandes:", {col: str(dt) for col, dt in orders_df.dtypes.items()})
 
 # Vérifier les colonnes requises pour RFM
 required_columns = ['customer_id', 'order_date', 'amount']
@@ -520,10 +530,11 @@ with st.expander("🔍 Segmentation des clients", expanded=True):
             # Afficher les statistiques détaillées
             st.markdown("**Statistiques détaillées par segment**")
             
-            # Sélectionner la métrique à analyser
+            # Sélectionner la métrique à analyser (utiliser les colonnes réellement disponibles)
+            available_metrics = [col for col in ['recency', 'frequency', 'monetary_value'] if col in st.session_state.rfm_data.columns]
             metric = st.selectbox(
                 "Sélectionnez une métrique",
-                ['recency', 'frequency', 'monetary'],
+                available_metrics,
                 key="metric_selector"
             )
             
@@ -574,10 +585,20 @@ with st.expander("🔍 Segmentation des clients", expanded=True):
             stats_by_segment = st.session_state.rfm_data.groupby('segment').agg(agg_dict).round(2)
             
             # Afficher le tableau avec mise en forme conditionnelle
-            st.dataframe(
-                stats_by_segment.style.background_gradient(cmap='YlGnBu', axis=0),
-                use_container_width=True
-            )
+            try:
+                # Essayer d'appliquer la mise en forme avec gradient
+                st.dataframe(
+                    stats_by_segment.style.background_gradient(cmap='YlGnBu', axis=0),
+                    use_container_width=True
+                )
+            except ImportError:
+                # Si matplotlib n'est pas disponible, afficher sans style
+                st.warning("⚠️ Matplotlib non disponible - affichage sans couleurs de fond")
+                st.dataframe(stats_by_segment, use_container_width=True)
+            except Exception as e:
+                # Fallback pour autres erreurs de style
+                st.warning(f"⚠️ Erreur lors de l'application du style: {str(e)} - affichage simple")
+                st.dataframe(stats_by_segment, use_container_width=True)
             
             # Télécharger les résultats de la segmentation
             st.markdown("**Exporter les résultats**")

@@ -70,14 +70,14 @@ with st.expander("📊 Analyse des segments", expanded=True):
     st.subheader("Vue d'ensemble des segments")
     
     # Calculer les métriques de base par segment
-    segment_stats = rfm_data.groupby('segment').agg({
+    segment_stats_df = rfm_data.groupby('segment').agg({
         'recency': ['mean', 'count'],
         'frequency': ['mean'],
         'monetary_value': ['mean', 'count']
     }).round(2)
     
     # Renommer les colonnes pour un affichage plus clair
-    segment_stats.columns = [
+    segment_stats_df.columns = [
         'récence_moyenne',
         'nb_clients',
         'fréquence_moyenne',
@@ -93,10 +93,12 @@ with st.expander("📊 Analyse des segments", expanded=True):
         'monetary_value_mean': 'Valeur moyenne (€)',
         'monetary_value_count': 'Nombre de clients'
     }
+    # Inverser le mapping pour retrouver les colonnes internes depuis les libellés affichés
+    display_to_internal = {v: k for k, v in display_names.items()}
     
     # Afficher les statistiques
     st.dataframe(
-        segment_stats.sort_values('monetary_value_mean', ascending=False),
+        segment_stats_df.sort_values('monetary_value_mean', ascending=False),
         use_container_width=True
     )
     
@@ -106,23 +108,23 @@ with st.expander("📊 Analyse des segments", expanded=True):
     # Sélection des métriques à comparer
     metrics = st.multiselect(
         "Métriques à comparer",
-        options=['Récence moyenne (jours)', 'Fréquence moyenne', 'Valeur moyenne (€)', 'Nombre de clients'],
+        options=list(display_to_internal.keys()),
         default=['Récence moyenne (jours)', 'Valeur moyenne (€)'],
         key="segment_metrics"
     )
     
     if metrics:
-        # Créer un graphique de comparaison
         fig = go.Figure()
-        
         for metric in metrics:
-            fig.add_trace(go.Bar(
-                x=segment_stats.index,
-                y=segment_stats[display_names[metric]],
-                name=metric,
-                text=segment_stats[display_names[metric]],
-                textposition='auto'
-            ))
+            col_name = display_to_internal.get(metric)
+            if col_name and col_name in segment_stats_df.columns:
+                fig.add_trace(go.Bar(
+                    x=segment_stats_df.index,
+                    y=segment_stats_df[col_name],
+                    name=metric,
+                    text=segment_stats_df[col_name],
+                    textposition='auto'
+                ))
         
         fig.update_layout(
             title="Comparaison des segments",
@@ -137,22 +139,21 @@ with st.expander("📊 Analyse des segments", expanded=True):
     # Analyse SWOT des segments
     st.subheader("Analyse SWOT par segment")
     
-    # Sélection du segment à analyser
     selected_segment = st.selectbox(
         "Sélectionnez un segment",
         options=sorted(rfm_data['segment'].unique()),
         key="swot_segment"
     )
     
-    # Obtenir les statistiques du segment sélectionné
-    segment_stats = rfm_data[rfm_data['segment'] == selected_segment].iloc[0]
+    # Calculer un profil moyen du segment sélectionné
+    seg_df = rfm_data[rfm_data['segment'] == selected_segment]
+    segment_profile = seg_df[['recency', 'frequency', 'monetary_value']].mean()
     
-    # Identifier les segments à forte valeur
-    is_high_value = segment_stats['monetary_value'] > rfm_data['monetary_value'].median()
-    is_frequent = segment_stats['frequency'] > rfm_data['frequency'].median()
-    is_recent = segment_stats['recency'] < rfm_data['recency'].median()
+    # Indicateurs relatifs (comparaison aux médianes globales)
+    is_high_value = segment_profile['monetary_value'] > rfm_data['monetary_value'].median()
+    is_frequent = segment_profile['frequency'] > rfm_data['frequency'].median()
+    is_recent = segment_profile['recency'] < rfm_data['recency'].median()
     
-    # Définir les forces, faiblesses, opportunités et menaces en fonction des caractéristiques du segment
     swot_analysis = {
         'Forces': [
             {"text": "Fidélité élevée des clients", "priority": "Haute", "action": "Renforcer la fidélisation"} if is_frequent 
@@ -193,35 +194,33 @@ with st.expander("📊 Analyse des segments", expanded=True):
     
     # Fonction pour afficher une carte SWOT avec style conditionnel
     def display_swot_card(category, items, icon):
-        # Définir la couleur en fonction de la catégorie
         colors = {
-            'Forces': '#2ecc71',    # Vert
-            'Faiblesses': '#e74c3c', # Rouge
-            'Opportunités': '#3498db', # Bleu
-            'Menaces': '#f39c12'     # Orange
+            'Forces': '#2ecc71',
+            'Faiblesses': '#e74c3c',
+            'Opportunités': '#3498db',
+            'Menaces': '#f39c12'
         }
+        color_val = colors[category]
         
         with st.container():
             st.markdown(f"""
             <div style="
-                border-left: 5px solid {color};
+                border-left: 5px solid {color_val};
                 background-color: #f8f9fa;
                 border-radius: 5px;
                 padding: 15px;
                 margin: 10px 0;
             ">
-                <h4 style="margin-top: 0; color: {color};">{icon} {category}</h4>
-            """.format(color=colors[category], icon=icon), unsafe_allow_html=True)
+                <h4 style="margin-top: 0; color: {color_val};">{icon} {category}</h4>
+            """, unsafe_allow_html=True)
             
             for item in items:
-                # Définir l'icône de priorité
                 priority_icons = {
                     'Haute': '🔥',
                     'Moyenne': '⚠️',
                     'Basse': 'ℹ️'
                 }
                 
-                # Afficher l'élément avec son action
                 st.markdown(f"""
                 <div style="
                     background-color: white;
@@ -235,10 +234,10 @@ with st.expander("📊 Analyse des segments", expanded=True):
                         <span style="color: #7f8c8d; font-size: 0.9em;">{priority_icons[item['priority']]} {item['priority']}</span>
                     </div>
                     <div style="margin-top: 5px;">
-                        <button onclick="alert('Action enregistrée: ' + this.getAttribute('data-action'))" 
+                        <button 
                                 data-action="{item['action']}"
                                 style="
-                                    background-color: {colors[category]};
+                                    background-color: {color_val};
                                     color: white;
                                     border: none;
                                     border-radius: 3px;
@@ -268,26 +267,28 @@ with st.expander("📊 Analyse des segments", expanded=True):
     # Ajouter un graphique radar pour visualiser les caractéristiques du segment
     st.subheader("Profil du segment")
     
-    # Préparer les données pour le graphique radar
     categories = ['Récence', 'Fréquence', 'Valeur']
+    # Sécuriser contre division par zéro
+    rec_range = rfm_data['recency'].max() - rfm_data['recency'].min()
+    freq_range = rfm_data['frequency'].max() - rfm_data['frequency'].min()
+    val_range = rfm_data['monetary_value'].max() - rfm_data['monetary_value'].min()
+    
     values = [
-        (rfm_data['recency'].max() - segment_stats['recency']) / (rfm_data['recency'].max() - rfm_data['recency'].min()) * 100,
-        (segment_stats['frequency'] - rfm_data['frequency'].min()) / (rfm_data['frequency'].max() - rfm_data['frequency'].min()) * 100,
-        (segment_stats['monetary_value_mean'] - rfm_data['monetary_value'].min()) / (rfm_data['monetary_value'].max() - rfm_data['monetary_value'].min()) * 100
+        ((rfm_data['recency'].max() - segment_profile['recency']) / rec_range * 100) if rec_range > 0 else 50,
+        ((segment_profile['frequency'] - rfm_data['frequency'].min()) / freq_range * 100) if freq_range > 0 else 50,
+        ((segment_profile['monetary_value'] - rfm_data['monetary_value'].min()) / val_range * 100) if val_range > 0 else 50
     ]
     
-    # Créer le graphique radar
     fig = go.Figure()
     
     fig.add_trace(go.Scatterpolar(
-        r=values + values[:1],  # Fermer le cercle
+        r=values + values[:1],
         theta=categories + categories[:1],
         fill='toself',
         name=selected_segment,
         line=dict(color='#3498db')
     ))
     
-    # Ajouter une trace pour la moyenne
     avg_values = [50, 50, 50, 50]
     fig.add_trace(go.Scatterpolar(
         r=avg_values,
@@ -296,7 +297,6 @@ with st.expander("📊 Analyse des segments", expanded=True):
         line=dict(color='#95a5a6', dash='dash')
     ))
     
-    # Mise en forme du graphique
     fig.update_layout(
         polar=dict(
             radialaxis=dict(

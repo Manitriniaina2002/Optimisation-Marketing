@@ -21,6 +21,7 @@ from sklearn.metrics import (
 )
 from xgboost import XGBClassifier
 from sklearn.preprocessing import LabelEncoder, StandardScaler
+from sklearn.preprocessing import label_binarize
 
 # Ajouter le répertoire parent au chemin pour les imports
 sys.path.append(str(Path(__file__).parent.parent))
@@ -49,6 +50,10 @@ if 'data_loaded' not in st.session_state or not st.session_state.data_loaded:
 customers_df = st.session_state.get('customers_df')
 orders_df = st.session_state.get('orders_df')
 marketing_df = st.session_state.get('marketing_df')
+
+# Travailler sur une copie pour éviter les SettingWithCopyWarning
+if customers_df is not None:
+    customers_df = customers_df.copy()
 
 # Vérifier que les données nécessaires sont disponibles
 if customers_df is None or orders_df is None:
@@ -118,9 +123,17 @@ with st.expander("📊 Préparation des données", expanded=True):
     if not numeric_cols:
         st.warning("⚠️ Aucune variable numérique détectée. Vérifiez le format de vos données.")
         
-        # Afficher les types de données détectés pour le débogage
+        # Afficher les types de données détectés pour le débogage (version compatible Arrow)
         st.write("Types de données détectés dans le DataFrame :")
-        st.write(customers_df.dtypes)
+        try:
+            dtypes_str = customers_df.dtypes.astype(str)
+            dtypes_df = pd.DataFrame({
+                'Colonne': dtypes_str.index,
+                'Type': dtypes_str.values
+            })
+            st.dataframe(dtypes_df, use_container_width=True)
+        except Exception:
+            st.write({col: str(dt) for col, dt in customers_df.dtypes.items()})
         
         # Afficher un échantillon des données
         st.write("Aperçu des données :")
@@ -135,7 +148,15 @@ with st.expander("📊 Préparation des données", expanded=True):
         st.write("Colonnes numériques détectées :", numeric_cols)
         st.write("Colonnes catégorielles détectées :", categorical_cols)
         st.write("Types de données :")
-        st.write(customers_df.dtypes)
+        try:
+            dtypes_str = customers_df.dtypes.astype(str)
+            dtypes_df = pd.DataFrame({
+                'Colonne': dtypes_str.index,
+                'Type': dtypes_str.values
+            })
+            st.dataframe(dtypes_df, use_container_width=True)
+        except Exception:
+            st.write({col: str(dt) for col, dt in customers_df.dtypes.items()})
     
     # Sélection des variables pour la modélisation
     selected_numeric = st.multiselect(
@@ -545,40 +566,36 @@ with st.expander("🤖 Entraînement du modèle", expanded=False):
                     try:
                         # Obtenir les probabilités de prédiction
                         y_pred_proba = model.predict_proba(X_test)
+                        classes_ = getattr(model, 'classes_', np.unique(y_test))
+                        n_classes = len(classes_)
                         
-                        # Vérifier que nous avons bien des probabilités pour la classe positive
-                        if y_pred_proba.shape[1] > 1:
-                            # Cas binaire ou multi-classe
-                            fpr, tpr, _ = roc_curve(y_test, y_pred_proba[:, 1])
+                        st.markdown("### Courbe ROC")
+                        
+                        if n_classes == 2:
+                            # Cas binaire
+                            # Identifier l'index de la classe positive (on prend la 2e classe par convention)
+                            pos_index = 1 if y_pred_proba.shape[1] > 1 else 0
+                            fpr, tpr, _ = roc_curve(y_test, y_pred_proba[:, pos_index], pos_label=classes_[pos_index])
                             roc_auc = auc(fpr, tpr)
                             
-                            st.markdown("### Courbe ROC")
-                            
-                            # Créer la figure
                             fig = go.Figure()
-                            fig.add_trace(go.Scatter(
-                                x=fpr,
-                                y=tpr,
-                                mode='lines',
-                                name=f'Courbe ROC (AUC = {roc_auc:.3f})',
-                                line=dict(color='#3498db', width=2)
-                            ))
-                            fig.add_trace(go.Scatter(
-                                x=[0, 1],
-                                y=[0, 1],
-                                mode='lines',
-                                name='Aléatoire',
-                                line=dict(color='#95a5a6', width=1, dash='dash')
-                            ))
-                            
-                            fig.update_layout(
-                                title='Courbe ROC',
-                                xaxis_title='Taux de faux positifs',
-                                yaxis_title='Taux de vrais positifs',
-                                showlegend=True,
-                                height=500
-                            )
-                            
+                            fig.add_trace(go.Scatter(x=fpr, y=tpr, mode='lines', name=f'ROC (AUC = {roc_auc:.3f})', line=dict(color='#3498db', width=2)))
+                            fig.add_trace(go.Scatter(x=[0, 1], y=[0, 1], mode='lines', name='Aléatoire', line=dict(color='#95a5a6', width=1, dash='dash')))
+                            fig.update_layout(title='Courbe ROC', xaxis_title='Taux de faux positifs', yaxis_title='Taux de vrais positifs', showlegend=True, height=500)
+                            st.plotly_chart(fig, use_container_width=True)
+                        else:
+                            # Cas multi-classes: One-vs-Rest
+                            y_test_bin = label_binarize(y_test, classes=classes_)
+                            fig = go.Figure()
+                            for i, cls in enumerate(classes_):
+                                try:
+                                    fpr, tpr, _ = roc_curve(y_test_bin[:, i], y_pred_proba[:, i])
+                                    roc_auc = auc(fpr, tpr)
+                                    fig.add_trace(go.Scatter(x=fpr, y=tpr, mode='lines', name=f'Classe {cls} (AUC = {roc_auc:.3f})'))
+                                except Exception:
+                                    continue
+                            fig.add_trace(go.Scatter(x=[0, 1], y=[0, 1], mode='lines', name='Aléatoire', line=dict(color='#95a5a6', width=1, dash='dash')))
+                            fig.update_layout(title='Courbes ROC (One-vs-Rest)', xaxis_title='Taux de faux positifs', yaxis_title='Taux de vrais positifs', showlegend=True, height=500)
                             st.plotly_chart(fig, use_container_width=True)
                     except Exception as e:
                         st.warning(f"Impossible d'afficher la courbe ROC : {str(e)}")
@@ -620,12 +637,13 @@ with st.expander("🤖 Entraînement du modèle", expanded=False):
                     # Afficher la matrice de confusion
                     st.markdown("### Matrice de confusion")
                     
-                    cm = confusion_matrix(y_test, y_pred)
+                    classes_ = np.unique(y_test)
+                    cm = confusion_matrix(y_test, y_pred, labels=classes_)
                     fig = px.imshow(
                         cm,
                         labels=dict(x="Prédit", y="Réel", color="Nombre"),
-                        x=['Négatif', 'Positif'],
-                        y=['Négatif', 'Positif'],
+                        x=[str(c) for c in classes_],
+                        y=[str(c) for c in classes_],
                         text_auto=True,
                         aspect="auto",
                         color_continuous_scale='Blues'
@@ -663,11 +681,12 @@ with st.expander("🤖 Entraînement du modèle", expanded=False):
                 # Afficher la matrice de confusion
                 st.subheader("Matrice de confusion")
                 
-                # Créer la figure de la matrice de confusion
+                # Créer la figure de la matrice de confusion avec l'utilitaire (corrige l'appel)
+                classes_ = np.unique(y_test)
+                cm = confusion_matrix(y_test, y_pred, labels=classes_)
                 fig_cm = plot_confusion_matrix(
-                    y_test, 
-                    y_pred,
-                    labels=np.unique(y_test),
+                    cm,
+                    class_names=[str(c) for c in classes_],
                     title=f"Matrice de confusion - {model_type}"
                 )
                 
@@ -761,12 +780,12 @@ with st.expander(" Faire des prédictions", expanded=False):
         if max_samples > 0:
             sample_size = st.slider(
                 "Nombre d'échantillons à afficher",
-                min_value=1,  # Minimum à 1 pour éviter les erreurs
-                max_value=max(1, max_samples),  # Au moins 1
+                min_value=1,
+                max_value=max(1, max_samples),
                 value=min(10, max_samples),
                 step=1
             )
-            # Si pas d'échantillons disponibles, on affiche un message et on sort de la condition
+        else:
             st.warning("Aucun échantillon disponible pour l'affichage.")
             st.stop()
         
@@ -804,17 +823,18 @@ with st.expander(" Faire des prédictions", expanded=False):
         # Créer un DataFrame avec les résultats
         results = []
         for i in sample_indices:
+            true_label = y_test.iloc[i]
+            pred_label = y_pred[i]
             result = {
                 'ID': i,
-                'Vérité terrain': 'Positif' if y_test.iloc[i] == 1 else 'Négatif',
-                'Prédiction': 'Positif' if y_pred[i] == 1 else 'Négatif',
-                'Statut': ' Correct' if y_test.iloc[i] == y_pred[i] else ' Erreur'
+                'Vérité terrain': str(true_label),
+                'Prédiction': str(pred_label),
+                'Statut': ' Correct' if true_label == pred_label else ' Erreur'
             }
             if y_pred_proba is not None:
-                proba = y_pred_proba[i][1]  # Probabilité de la classe positive
+                # Probabilité de la classe prédite (ou max proba en multiclasses)
+                proba = float(np.max(y_pred_proba[i]))
                 result['Confiance'] = f"{proba:.1%}"
-                
-                # Ajouter une jauge de confiance
                 result['_Jauge'] = proba
             results.append(result)
         
@@ -845,24 +865,25 @@ with st.expander(" Faire des prédictions", expanded=False):
         # Afficher la distribution des prédictions
         st.markdown("### Distribution des prédictions")
         
-        # Calculer les comptes de prédictions
-        pred_counts = pd.Series(y_pred).value_counts().sort_index()
-        pred_counts.index = ['Négatif', 'Positif']
+        # Calculer les comptes de prédictions avec étiquettes dynamiques
+        classes_pred = np.unique(y_pred)
+        pred_counts = pd.Series(y_pred).value_counts().reindex(classes_pred, fill_value=0)
+        labels = [str(c) for c in classes_pred]
         
         # Créer un graphique à barres
         fig = px.bar(
-            x=pred_counts.index,
+            x=labels,
             y=pred_counts.values,
-            labels={'x': 'Classe prédite', 'y': 'Nombre d\'échantillons'},
-            title='Distribution des prédictions sur l\'ensemble de test',
-            color=pred_counts.index,
-            color_discrete_map={'Négatif': '#e74c3c', 'Positif': '#2ecc71'}
+            labels={'x': 'Classe prédite', 'y': "Nombre d'échantillons"},
+            title="Distribution des prédictions sur l'ensemble de test",
+            color=labels,
+            color_discrete_sequence=px.colors.qualitative.Set2
         )
         
         fig.update_layout(
             showlegend=False,
             xaxis_title='Classe prédite',
-            yaxis_title='Nombre d\'échantillons',
+            yaxis_title="Nombre d'échantillons",
             height=400
         )
         
@@ -1132,13 +1153,11 @@ col1, col2, col3 = st.columns([1, 1, 1])
 
 with col1:
     if st.button("← Précédent", use_container_width=True):
-        st.session_state.current_step = 4
-        st.rerun()
+        st.switch_page("pages/4_📈_Analyse_des_performances.py")
 
 with col3:
     if st.button("Suivant →", type="primary", use_container_width=True):
-        st.session_state.current_step = 6
-        st.rerun()
+        st.switch_page("pages/6_🎯_Stratégie_marketing.py")
 
 # Style CSS personnalisé
 st.markdown("""

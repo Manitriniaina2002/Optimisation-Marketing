@@ -107,8 +107,11 @@ def convert_numeric_columns(df, numeric_columns):
             original_dtype = str(df[col].dtype)
             
             # Remplacer les virgules par des points pour les nombres décimaux
+            # et traiter les chaînes vides comme des valeurs manquantes
             if df[col].dtype == 'object':
                 df[col] = df[col].astype(str).str.replace(',', '.')
+                # Remplacer les chaînes vides et 'nan' par NaN
+                df[col] = df[col].replace(['', 'nan', 'None', 'null'], pd.NA)
             
             # Convertir en numérique
             df[col] = pd.to_numeric(df[col], errors='coerce')

@@ -83,7 +83,7 @@ def display_segment_overview(df):
     with col2:
         st.metric("Nombre de segments", segments)
     with col3:
-        avg_clv = df['monetary'].mean()
+        avg_clv = df['monetary_value'].mean()
         st.metric("Valeur moyenne du client (CLV)", f"{avg_clv:,.2f} €")
     
     # Graphique de répartition des segments
@@ -118,7 +118,7 @@ def display_segment_details(df):
     with col1:
         st.metric("Nombre de clients", len(segment_data))
     with col2:
-        st.metric("CLV moyenne", f"{segment_data['monetary'].mean():,.2f} €")
+        st.metric("CLV moyenne", f"{segment_data['monetary_value'].mean():,.2f} €")
     with col3:
         st.metric("Fréquence d'achat", f"{segment_data['frequency'].mean():.2f}/mois")
     with col4:
@@ -128,9 +128,9 @@ def display_segment_details(df):
     st.subheader("Distribution de la valeur client (CLV)")
     fig = px.histogram(
         segment_data, 
-        x='monetary',
+        x='monetary_value',
         nbins=20,
-        labels={'monetary': 'Valeur du client (CLV en €)'},
+        labels={'monetary_value': 'Valeur du client (CLV en €)'},
         color_discrete_sequence=['#3498db']
     )
     fig.update_layout(bargap=0.1)
