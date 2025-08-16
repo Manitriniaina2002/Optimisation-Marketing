@@ -1,0 +1,203 @@
+
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>Rapport d'Analyse Prédictive</title>
+        <style>
+            body { font-family: Arial, sans-serif; line-height: 1.6; margin: 0; padding: 20px; }
+            .container { max-width: 1200px; margin: 0 auto; }
+            .header { text-align: center; margin-bottom: 30px; }
+            .section { margin-bottom: 40px; }
+            .section h2 { color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 5px; }
+            .model-card { 
+                border: 1px solid #ddd; 
+                border-radius: 5px; 
+                padding: 15px; 
+                margin-bottom: 20px;
+                background-color: #f9f9f9;
+            }
+            .metrics { display: flex; flex-wrap: wrap; gap: 20px; }
+            .metric-card { 
+                background: white; 
+                border-left: 4px solid #3498db; 
+                padding: 10px 15px; 
+                flex: 1; 
+                min-width: 150px;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            }
+            .metric-card h4 { margin: 0 0 5px 0; color: #7f8c8d; }
+            .metric-value { font-size: 24px; font-weight: bold; color: #2c3e50; }
+            .plot-container { margin: 20px 0; }
+            .plot-container img { max-width: 100%; height: auto; }
+            table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+            th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+            th { background-color: #f2f2f2; }
+            tr:nth-child(even) { background-color: #f9f9f9; }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="header">
+                <h1>Rapport d'Analyse Prédictive</h1>
+                <p>Date du rapport: 16/08/2025</p>
+            </div>
+            
+            <div class="section">
+                <h2>1. Résumé Exécutif</h2>
+                <p>Ce rapport présente les résultats de l'analyse prédictive menée sur la base de données clients. 
+                L'analyse comprend la prédiction du taux de désabonnement (churn) et le calcul de la valeur à vie du client (CLV).</p>
+                
+                <div class="metrics">
+                    <div class="metric-card">
+                        <h4>Meilleur Modèle</h4>
+                        <div class="metric-value">Random Forest</div>
+                    </div>
+                    <div class="metric-card">
+                        <h4>Précision (F1-Score)</h4>
+                        <div class="metric-value">0.67</div>
+                    </div>
+                    <div class="metric-card">
+                        <h4>CLV Moyenne</h4>
+                        <div class="metric-value">9000.00 €</div>
+                    </div>
+                    <div class="metric-card">
+                        <h4>Taux de Churn Prédit</h4>
+                        <div class="metric-value">50.0%</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="section">
+                <h2>2. Analyse du Churn</h2>
+                <h3>2.1 Performance des Modèles</h3>
+                <div class="plot-container">
+                    <iframe src="model_comparison.html" width="100%" height="500" frameborder="0"></iframe>
+                </div>
+                
+                <h3>2.2 Matrice de Confusion</h3>
+                <p>La matrice de confusion pour le modèle Random Forest est présentée ci-dessous :</p>
+                <div class="plot-container">
+                    <iframe src="confusion_matrix.html" width="600" height="500" frameborder="0"></iframe>
+                </div>
+                
+                <h3>2.3 Importance des Caractéristiques</h3>
+                <p>Les caractéristiques les plus importantes pour la prédiction du churn sont :</p>
+                <div class="plot-container">
+                    <iframe src="feature_importance.html" width="800" height="500" frameborder="0"></iframe>
+                </div>
+            </div>
+            
+            <div class="section">
+                <h2>3. Analyse de la Valeur à Vie du Client (CLV)</h2>
+                <h3>3.1 Distribution de la CLV par Segment</h3>
+                <div class="plot-container">
+                    <iframe src="clv_by_segment.html" width="800" height="500" frameborder="0"></iframe>
+                </div>
+                
+                <h3>3.2 Relation entre Fréquence d'Achat et CLV</h3>
+                <div class="plot-container">
+                    <iframe src="freq_vs_clv.html" width="800" height="500" frameborder="0"></iframe>
+                </div>
+                
+                <h3>3.3 Top 10 Clients par CLV</h3>
+                <table border="1" class="dataframe data-table">
+  <thead>
+    <tr style="text-align: right;">
+      <th>customer_id</th>
+      <th>clv</th>
+      <th>purchase_freq</th>
+      <th>avg_order_value</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>C001</td>
+      <td>9000.00</td>
+      <td>0.08</td>
+      <td>9000.00</td>
+    </tr>
+    <tr>
+      <td>C002</td>
+      <td>9000.00</td>
+      <td>0.08</td>
+      <td>9000.00</td>
+    </tr>
+    <tr>
+      <td>C003</td>
+      <td>9000.00</td>
+      <td>0.08</td>
+      <td>9000.00</td>
+    </tr>
+    <tr>
+      <td>C004</td>
+      <td>9000.00</td>
+      <td>0.08</td>
+      <td>9000.00</td>
+    </tr>
+    <tr>
+      <td>C005</td>
+      <td>9000.00</td>
+      <td>0.08</td>
+      <td>9000.00</td>
+    </tr>
+    <tr>
+      <td>C006</td>
+      <td>9000.00</td>
+      <td>0.08</td>
+      <td>9000.00</td>
+    </tr>
+    <tr>
+      <td>C007</td>
+      <td>9000.00</td>
+      <td>0.08</td>
+      <td>9000.00</td>
+    </tr>
+    <tr>
+      <td>C008</td>
+      <td>9000.00</td>
+      <td>0.08</td>
+      <td>9000.00</td>
+    </tr>
+    <tr>
+      <td>C009</td>
+      <td>9000.00</td>
+      <td>0.08</td>
+      <td>9000.00</td>
+    </tr>
+    <tr>
+      <td>C010</td>
+      <td>9000.00</td>
+      <td>0.08</td>
+      <td>9000.00</td>
+    </tr>
+  </tbody>
+</table>
+            </div>
+            
+            <div class="section">
+                <h2>4. Recommandations Stratégiques</h2>
+                <h3>4.1 Pour la Rétention Client</h3>
+                <ul>
+                    <li>Mettre en place un programme de fidélité ciblant les clients à haut risque de churn identifiés par le modèle.</li>
+                    <li>Personnaliser les offres en fonction des caractéristiques des clients à risque.</li>
+                    <li>Améliorer l'expérience client pour les segments présentant un taux de churn élevé.</li>
+                </ul>
+                
+                <h3>4.2 Pour l'Optimisation de la CLV</h3>
+                <ul>
+                    <li>Développer des stratégies d'upselling et de cross-selling pour les clients à forte CLV.</li>
+                    <li>Créer des programmes d'engagement pour augmenter la fréquence d'achat des clients à CLV moyenne.</li>
+                    <li>Allouer plus de ressources au service client pour les segments à haute valeur.</li>
+                </ul>
+            </div>
+            
+            <div class="section">
+                <h2>5. Conclusion</h2>
+                <p>L'analyse prédictive a permis d'identifier les principaux facteurs de churn et de calculer la valeur à vie des clients. 
+                Les modèles développés atteignent une précision satisfaisante et peuvent être utilisés pour guider les décisions marketing.</p>
+                <p>Les recommandations fournies dans ce rapport visent à améliorer la rétention des clients et à maximiser leur valeur à long terme pour l'entreprise.</p>
+            </div>
+        </div>
+    </body>
+    </html>
+    

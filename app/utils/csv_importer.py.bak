@@ -1,0 +1,141 @@
+"""
+Module utilitaire pour l'importation robuste des fichiers CSV.
+Gère automatiquement la détection du séparateur, l'encodage et le typage des colonnes.
+"""
+
+import pandas as pd
+import chardet
+from io import StringIO
+import streamlit as st
+
+def detect_separator(content):
+    """Détecte le séparateur utilisé dans le fichier CSV."""
+    # Essaye de détecter le séparateur en analysant la première ligne
+    first_line = content.split('\n')[0]
+    
+    # Compte les occurrences de chaque séparateur potentiel
+    separators = {',': first_line.count(','), ';': first_line.count(';'), '\t': first_line.count('\t')}
+    
+    # Retourne le séparateur le plus fréquent
+    return max(separators.items(), key=lambda x: x[1])[0]
+
+def detect_encoding(file_content):
+    """Détecte l'encodage du fichier."""
+    result = chardet.detect(file_content)
+    return result['encoding']
+
+def clean_column_name(column_name):
+    """Nettoie le nom des colonnes en minuscules et supprime les espaces."""
+    return str(column_name).strip().lower().replace(' ', '_')
+
+def map_column_names(df, expected_columns):
+    """Tente de mapper les noms de colonnes réels aux noms attendus."""
+    # Nettoyer les noms de colonnes
+    df_columns = [clean_column_name(col) for col in df.columns]
+    expected_columns = [clean_column_name(col) for col in expected_columns]
+    
+    # Créer un mapping des colonnes trouvées vers les colonnes attendues
+    column_mapping = {}
+    
+    for expected in expected_columns:
+        # Essayer de trouver une correspondance exacte
+        if expected in df_columns:
+            column_mapping[expected] = expected
+            continue
+            
+        # Essayer de trouver une correspondance partielle
+        for col in df_columns:
+            if expected in col or col in expected:
+                column_mapping[expected] = col
+                break
+    
+    # Renommer les colonnes si nécessaire
+    if column_mapping:
+        df = df.rename(columns={v: k for k, v in column_mapping.items() if k != v})
+    
+    return df
+
+def convert_date_columns(df, date_columns):
+    """Convertit les colonnes de date au bon format."""
+    for col in date_columns:
+        if col in df.columns:
+            df[col] = pd.to_datetime(df[col], dayfirst=True, errors='coerce')
+    return df
+
+def convert_numeric_columns(df, numeric_columns):
+    """Convertit les colonnes numériques au bon format."""
+    for col in numeric_columns:
+        if col in df.columns:
+            # Remplacer les virgules par des points pour les nombres décimaux
+            if df[col].dtype == 'object':
+                df[col] = df[col].astype(str).str.replace(',', '.')
+            df[col] = pd.to_numeric(df[col], errors='coerce')
+    return df
+
+def load_csv(file_uploader, expected_columns, date_columns=None, numeric_columns=None, required_columns=None):
+    """
+    Charge un fichier CSV de manière robuste.
+    
+    Args:
+        file_uploader: Le fichier téléchargé via st.file_uploader
+        expected_columns: Liste des colonnes attendues
+        date_columns: Liste des colonnes de date
+        numeric_columns: Liste des colonnes numériques
+        required_columns: Colonnes obligatoires (doivent être présentes et non vides)
+    
+    Returns:
+        DataFrame: Les données chargées ou None en cas d'erreur
+    """
+    if file_uploader is None:
+        return None
+    
+    if date_columns is None:
+        date_columns = []
+    if numeric_columns is None:
+        numeric_columns = []
+    if required_columns is None:
+        required_columns = []
+    
+    try:
+        # Lire le contenu brut du fichier
+        file_content = file_uploader.getvalue()
+        
+        # Détecter l'encodage
+        encoding = detect_encoding(file_content)
+        content = file_content.decode(encoding)
+        
+        # Détecter le séparateur
+        sep = detect_separator(content)
+        
+        # Lire le fichier CSV
+        df = pd.read_csv(StringIO(content), sep=sep, dtype=str, encoding=encoding)
+        
+        # Nettoyer les noms de colonnes
+        df.columns = [clean_column_name(col) for col in df.columns]
+        
+        # Essayer de mapper les colonnes aux noms attendus
+        df = map_column_names(df, expected_columns)
+        
+        # Convertir les types de données
+        df = convert_date_columns(df, date_columns)
+        df = convert_numeric_columns(df, numeric_columns)
+        
+        # Vérifier les colonnes requises
+        missing_columns = [col for col in required_columns if col not in df.columns]
+        if missing_columns:
+            st.error(f"❌ Colonnes obligatoires manquantes : {', '.join(missing_columns)}")
+            return None
+        
+        # Supprimer les lignes avec des valeurs manquantes dans les colonnes requises
+        if required_columns:
+            initial_count = len(df)
+            df = df.dropna(subset=required_columns)
+            if len(df) < initial_count:
+                st.warning(f"ℹ️ {initial_count - len(df)} lignes ont été supprimées car elles contenaient des valeurs manquantes dans les colonnes requises.")
+        
+        return df
+    
+    except Exception as e:
+        st.error(f"❌ Erreur lors du chargement du fichier : {str(e)}")
+        st.exception(e)
+        return None

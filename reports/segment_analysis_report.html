@@ -1,0 +1,678 @@
+
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Rapport d'Analyse des Segments Clients</title>
+            <style>
+                body { font-family: Arial, sans-serif; line-height: 1.6; margin: 0; padding: 20px; }
+                .container { max-width: 1200px; margin: 0 auto; }
+                .header { text-align: center; margin-bottom: 30px; }
+                .section { margin-bottom: 40px; }
+                .section h2 { 
+                    color: #2c3e50; 
+                    border-bottom: 2px solid #3498db; 
+                    padding-bottom: 5px; 
+                }
+                .metrics { 
+                    display: flex; 
+                    flex-wrap: wrap; 
+                    gap: 20px; 
+                    margin: 20px 0;
+                }
+                .metric-card { 
+                    background: white; 
+                    border-left: 4px solid #3498db; 
+                    padding: 15px; 
+                    flex: 1; 
+                    min-width: 200px;
+                    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                }
+                .metric-card h3 { margin: 0 0 10px 0; color: #7f8c8d; }
+                .metric-value { font-size: 24px; font-weight: bold; color: #2c3e50; }
+                table { 
+                    width: 100%; 
+                    border-collapse: collapse; 
+                    margin: 20px 0;
+                    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+                }
+                th, td { 
+                    border: 1px solid #ddd; 
+                    padding: 12px; 
+                    text-align: left; 
+                }
+                th { 
+                    background-color: #f2f2f2; 
+                    position: sticky;
+                    top: 0;
+                }
+                tr:nth-child(even) { background-color: #f9f9f9; }
+                tr:hover { background-color: #f1f1f1; }
+                .plot-container { 
+                    margin: 30px 0;
+                    border: 1px solid #eee;
+                    padding: 15px;
+                    border-radius: 5px;
+                }
+                .plot-container h3 { 
+                    margin-top: 0;
+                    color: #2c3e50;
+                }
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <div class="header">
+                    <h1>Rapport d'Analyse des Segments Clients</h1>
+                    <p>Date du rapport: 16/08/2025</p>
+                </div>
+                
+                <div class="section">
+                    <h2>1. Vue d'ensemble</h2>
+                    <p>Ce rapport présente une analyse approfondie des segments clients identifiés lors de l'étape de segmentation.</p>
+                    
+                    <div class="metrics">
+                        <div class="metric-card">
+                            <h3>Nombre total de clients</h3>
+                            <div class="metric-value">24</div>
+                        </div>
+                        <div class="metric-card">
+                            <h3>Nombre de segments</h3>
+                            <div class="metric-value">5</div>
+                        </div>
+                        <div class="metric-card">
+                            <h3>Chiffre d'affaires total</h3>
+                            <div class="metric-value">720,000.00 €</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="section">
+                    <h2>2. Distribution des segments</h2>
+                    <div class="plot-container">
+                        <iframe src="segment_distribution.html" width="100%" height="500" frameborder="0"></iframe>
+                    </div>
+                </div>
+                
+                <div class="section">
+                    <h2>3. Profils Démographiques</h2>
+                    <div class="plot-container">
+                        <iframe src="demographic_profiles.html" width="100%" height="850" frameborder="0"></iframe>
+                    </div>
+                </div>
+                
+                <div class="section">
+                    <h2>4. Préférences par Segment</h2>
+                    
+                    <h3>4.1 Catégories préférées</h3>
+                    <table border="1" class="dataframe data-table">
+  <thead>
+    <tr style="text-align: right;">
+      <th>segment</th>
+      <th>category</th>
+      <th>order_id</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>0</td>
+      <td>Streetwear</td>
+      <td>3</td>
+    </tr>
+    <tr>
+      <td>0</td>
+      <td>Sport</td>
+      <td>2</td>
+    </tr>
+    <tr>
+      <td>0</td>
+      <td>Casual</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td>1</td>
+      <td>Streetwear</td>
+      <td>2</td>
+    </tr>
+    <tr>
+      <td>1</td>
+      <td>Casual</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td>1</td>
+      <td>Sport</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td>Streetwear</td>
+      <td>3</td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td>Casual</td>
+      <td>2</td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td>Fashion</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td>Sport</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td>3</td>
+      <td>Casual</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td>3</td>
+      <td>Fashion</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td>3</td>
+      <td>Sport</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td>3</td>
+      <td>Streetwear</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td>4</td>
+      <td>Casual</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td>4</td>
+      <td>Sport</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td>4</td>
+      <td>Streetwear</td>
+      <td>1</td>
+    </tr>
+  </tbody>
+</table>
+                    
+                    <h3>4.2 Styles préférés</h3>
+                    <table border="1" class="dataframe data-table">
+  <thead>
+    <tr style="text-align: right;">
+      <th>segment</th>
+      <th>style</th>
+      <th>order_id</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>0</td>
+      <td>Art graphique</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td>0</td>
+      <td>DryFit imprimé</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td>0</td>
+      <td>Graffiti Coloré</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td>0</td>
+      <td>Logo minimaliste</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td>0</td>
+      <td>Minimal chic</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td>0</td>
+      <td>Performance Fit</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td>1</td>
+      <td>Art graphique</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td>1</td>
+      <td>DryFit imprimé</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td>1</td>
+      <td>Logo minimaliste</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td>1</td>
+      <td>Minimal chic</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td>Art graphique</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td>Design floral</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td>DryFit imprimé</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td>Graffiti Coloré</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td>Logo minimaliste</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td>Minimal chic</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td>Vintage rétro</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td>3</td>
+      <td>Design floral</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td>3</td>
+      <td>Graffiti Coloré</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td>3</td>
+      <td>Performance Fit</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td>3</td>
+      <td>Vintage rétro</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td>4</td>
+      <td>Logo minimaliste</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td>4</td>
+      <td>Performance Fit</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td>4</td>
+      <td>Vintage rétro</td>
+      <td>1</td>
+    </tr>
+  </tbody>
+</table>
+                    
+                    <h3>4.3 Tailles préférées</h3>
+                    <table border="1" class="dataframe data-table">
+  <thead>
+    <tr style="text-align: right;">
+      <th>segment</th>
+      <th>size</th>
+      <th>order_id</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>0</td>
+      <td>M</td>
+      <td>4</td>
+    </tr>
+    <tr>
+      <td>0</td>
+      <td>L</td>
+      <td>2</td>
+    </tr>
+    <tr>
+      <td>1</td>
+      <td>M</td>
+      <td>3</td>
+    </tr>
+    <tr>
+      <td>1</td>
+      <td>L</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td>M</td>
+      <td>3</td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td>L</td>
+      <td>2</td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td>S</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td>XL</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td>3</td>
+      <td>L</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td>3</td>
+      <td>M</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td>3</td>
+      <td>S</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td>3</td>
+      <td>XL</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td>4</td>
+      <td>M</td>
+      <td>2</td>
+    </tr>
+    <tr>
+      <td>4</td>
+      <td>XL</td>
+      <td>1</td>
+    </tr>
+  </tbody>
+</table>
+                    
+                    <h3>4.4 Couleurs préférées</h3>
+                    <table border="1" class="dataframe data-table">
+  <thead>
+    <tr style="text-align: right;">
+      <th>segment</th>
+      <th>color</th>
+      <th>order_id</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>0</td>
+      <td>Noir</td>
+      <td>2</td>
+    </tr>
+    <tr>
+      <td>0</td>
+      <td>Beige</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td>0</td>
+      <td>Blanc</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td>0</td>
+      <td>Bleu</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td>0</td>
+      <td>Vert</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td>1</td>
+      <td>Beige</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td>1</td>
+      <td>Blanc</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td>1</td>
+      <td>Bleu</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td>1</td>
+      <td>Noir</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td>Noir</td>
+      <td>2</td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td>Beige</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td>Blanc</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td>Bleu</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td>Gris</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td>Rose</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td>3</td>
+      <td>Gris</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td>3</td>
+      <td>Noir</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td>3</td>
+      <td>Rose</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td>3</td>
+      <td>Vert</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td>4</td>
+      <td>Gris</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td>4</td>
+      <td>Noir</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td>4</td>
+      <td>Vert</td>
+      <td>1</td>
+    </tr>
+  </tbody>
+</table>
+                    
+                    <h3>4.5 Panier moyen</h3>
+                    <table border="1" class="dataframe data-table">
+  <thead>
+    <tr style="text-align: right;">
+      <th>segment</th>
+      <th>mean</th>
+      <th>median</th>
+      <th>count</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>0</td>
+      <td>30000.00</td>
+      <td>30000.00</td>
+      <td>6</td>
+    </tr>
+    <tr>
+      <td>1</td>
+      <td>30000.00</td>
+      <td>30000.00</td>
+      <td>4</td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td>30000.00</td>
+      <td>30000.00</td>
+      <td>7</td>
+    </tr>
+    <tr>
+      <td>3</td>
+      <td>30000.00</td>
+      <td>30000.00</td>
+      <td>4</td>
+    </tr>
+    <tr>
+      <td>4</td>
+      <td>30000.00</td>
+      <td>30000.00</td>
+      <td>3</td>
+    </tr>
+  </tbody>
+</table>
+                </div>
+                
+                <div class="section">
+                    <h2>5. Analyse de la Valeur Client</h2>
+                    <table border="1" class="dataframe data-table">
+  <thead>
+    <tr style="text-align: right;">
+      <th>segment</th>
+      <th>total_revenue</th>
+      <th>avg_revenue</th>
+      <th>median_revenue</th>
+      <th>customer_count</th>
+      <th>revenue_pct</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>0</td>
+      <td>180000</td>
+      <td>30000.00</td>
+      <td>30000.00</td>
+      <td>6</td>
+      <td>25.00</td>
+    </tr>
+    <tr>
+      <td>1</td>
+      <td>120000</td>
+      <td>30000.00</td>
+      <td>30000.00</td>
+      <td>4</td>
+      <td>16.67</td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td>210000</td>
+      <td>30000.00</td>
+      <td>30000.00</td>
+      <td>7</td>
+      <td>29.17</td>
+    </tr>
+    <tr>
+      <td>3</td>
+      <td>120000</td>
+      <td>30000.00</td>
+      <td>30000.00</td>
+      <td>4</td>
+      <td>16.67</td>
+    </tr>
+    <tr>
+      <td>4</td>
+      <td>90000</td>
+      <td>30000.00</td>
+      <td>30000.00</td>
+      <td>3</td>
+      <td>12.50</td>
+    </tr>
+  </tbody>
+</table>
+                </div>
+                
+                <div class="section">
+                    <h2>6. Recommandations Stratégiques</h2>
+                    
+                    <h3>6.1 Pour les clients à haute valeur</h3>
+                    <ul>
+                        <li>Mettre en place des programmes de fidélité premium</li>
+                        <li>Proposer des offres personnalisées et exclusives</li>
+                        <li>Maintenir un contact régulier avec du contenu de qualité</li>
+                    </ul>
+                    
+                    <h3>6.2 Pour les clients à potentiel</h3>
+                    <ul>
+                        <li>Identifier les opportunités d'upselling et de cross-selling</li>
+                        <li>Améliorer l'expérience client pour augmenter la fréquence d'achat</li>
+                        <li>Mettre en place des campagnes de rétention ciblées</li>
+                    </ul>
+                    
+                    <h3>6.3 Pour les clients à risque</h3>
+                    <ul>
+                        <li>Identifier les facteurs de désabonnement</li>
+                        <li>Mettre en place des actions correctives</li>
+                        <li>Enquêter sur les raisons de la baisse d'engagement</li>
+                    </ul>
+                </div>
+                
+                <div class="section">
+                    <h2>7. Conclusion</h2>
+                    <p>Cette analyse approfondie des segments clients fournit des informations précieuses pour orienter les stratégies marketing et commerciales. En comprenant les caractéristiques, les préférences et le comportement d'achat de chaque segment, il est possible de personnaliser les offres et les communications pour maximiser la satisfaction et la fidélisation des clients.</p>
+                </div>
+            </div>
+        </body>
+        </html>
+        

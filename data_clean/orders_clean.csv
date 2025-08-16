@@ -1,0 +1,25 @@
+order_id,customer_id,tshirt_id,quantity,price,order_date,base_price,amount,name,age,gender,city,signup_date,category,style,size,color,base_price_y
+O1001,C001,T101,2,30000,2025-05-01,30000,60000,ANDRIATSITOHAINA Faly Jean Antonio Downavan,22,M,Fianarantsoa,2025-04-28,Streetwear,Logo minimaliste,M,Noir,30000
+O1002,C002,T105,1,30000,2025-05-02,30000,30000,RANDRIAMBOLOLONA Manitriniaina Louis Josilde,22,M,Fianarantsoa,2025-04-28,Fashion,Design floral,S,Rose,30000
+O1003,C003,T103,3,30000,2025-05-03,30000,90000,RANDRIANANTENAINA Judicael,23,M,Fianarantsoa,2025-04-28,Sport,DryFit imprimé,M,Bleu,30000
+O1004,C004,T102,2,30000,2025-05-04,30000,60000,RAVOLATSARA Onitriniaina Anjelycia Tranombiby,22,F,Fianarantsoa,2025-04-28,Streetwear,Art graphique,L,Blanc,30000
+O1005,C005,T104,1,30000,2025-05-05,30000,30000,MACARTY Hasiniaina Ernest,22,M,Fianarantsoa,2025-04-28,Casual,Vintage rétro,XL,Gris,30000
+O1006,C006,T106,1,30000,2025-05-06,30000,30000,Jimmy Andrianjaka,26,M,Fianarantsoa,2025-04-28,Streetwear,Graffiti Coloré,L,Noir,30000
+O1007,C007,T108,1,30000,2025-05-07,30000,30000,Kevin Andrianina,34,M,Fianarantsoa,2025-05-05,Casual,Minimal chic,M,Beige,30000
+O1008,C008,T107,4,30000,2025-05-08,30000,120000,Lina Rasoanaivo,19,F,Antananarivo,2025-04-24,Sport,Performance Fit,M,Vert,30000
+O1009,C009,T101,3,30000,2025-05-09,30000,90000,Niry Andriamanga,31,M,Antsirabe,2025-04-24,Streetwear,Logo minimaliste,M,Noir,30000
+O1010,C010,T104,5,30000,2025-05-10,30000,150000,Sarah Rakoto,24,F,Fianarantsoa,2025-05-10,Casual,Vintage rétro,XL,Gris,30000
+O1011,C011,T102,2,30000,2025-05-11,30000,60000,Fara Raveloson,25,F,Antananarivo,2025-06-03,Streetwear,Art graphique,L,Blanc,30000
+O1012,C012,T103,1,30000,2025-05-12,30000,30000,Joel Randrianarisoa,39,M,Toliara,2025-06-10,Sport,DryFit imprimé,M,Bleu,30000
+O1013,C013,T106,3,30000,2025-05-13,30000,90000,Hanitra Rabeharisoa,28,F,Diego,2025-05-10,Streetwear,Graffiti Coloré,L,Noir,30000
+O1014,C014,T107,2,30000,2025-05-14,30000,60000,Mamy Rakotobe,33,M,Nosy Be,2025-04-23,Sport,Performance Fit,M,Vert,30000
+O1015,C015,T108,1,30000,2025-05-15,30000,30000,Voahirana Andriamahefa,21,F,Antananarivo,2025-06-26,Casual,Minimal chic,M,Beige,30000
+O1016,C016,T101,2,30000,2025-05-16,30000,60000,Hery Rakotomanga,40,M,Morondava,2025-06-26,Streetwear,Logo minimaliste,M,Noir,30000
+O1017,C017,T105,4,30000,2025-05-17,30000,120000,Tahina Rasoanantenaina,29,M,Antsirabe,2025-05-10,Fashion,Design floral,S,Rose,30000
+O1018,C018,T102,5,30000,2025-05-18,30000,150000,Jean-Pierre Andrianjafy,38,M,Fianarantsoa,2025-04-20,Streetwear,Art graphique,L,Blanc,30000
+O1019,C019,T103,6,30000,2025-05-19,30000,180000,Eliane Razafindrakoto,24,F,Antsirabe,2025-05-01,Sport,DryFit imprimé,M,Bleu,30000
+O1020,C020,T104,4,30000,2025-05-20,30000,120000,Andry Rakotomalala,22,M,Antananarivo,2025-05-25,Casual,Vintage rétro,XL,Gris,30000
+O1021,C021,T106,3,30000,2025-05-21,30000,90000,Malala Raharimanana,30,F,Antananarivo,2025-05-06,Streetwear,Graffiti Coloré,L,Noir,30000
+O1022,C022,T108,6,30000,2025-05-22,30000,180000,Patrick Rakotondrazaka,41,M,Toliara,2025-07-09,Casual,Minimal chic,M,Beige,30000
+O1023,C023,T101,7,30000,2025-05-23,30000,210000,Lalao Andrianantenaina,26,F,Mahajanga,2025-04-30,Streetwear,Logo minimaliste,M,Noir,30000
+O1024,C024,T107,2,30000,2025-05-24,30000,60000,Daniel Rakotomalala,25,M,Antsirabe,2025-05-26,Sport,Performance Fit,M,Vert,30000

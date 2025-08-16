@@ -1,0 +1,25 @@
+customer_id,Cluster,recency,frequency,monetary,RFM_Score,age_first,gender_first,city_first
+C001,2,23,1,60000,7,22,M,Fianarantsoa
+C002,2,22,1,30000,7,22,M,Fianarantsoa
+C003,2,21,1,90000,7,23,M,Fianarantsoa
+C004,2,20,1,60000,7,22,F,Fianarantsoa
+C005,2,19,1,30000,7,22,M,Fianarantsoa
+C006,2,18,1,30000,8,26,M,Fianarantsoa
+C007,2,17,1,30000,8,34,M,Fianarantsoa
+C008,4,16,1,120000,8,19,F,Antananarivo
+C009,4,15,1,90000,8,31,M,Antsirabe
+C010,4,14,1,150000,8,24,F,Fianarantsoa
+C011,0,13,1,60000,9,25,F,Antananarivo
+C012,0,12,1,30000,9,39,M,Toliara
+C013,0,11,1,90000,9,28,F,Diego
+C014,0,10,1,60000,9,33,M,Nosy Be
+C015,0,9,1,30000,10,21,F,Antananarivo
+C016,0,8,1,60000,10,40,M,Morondava
+C017,3,7,1,120000,10,29,M,Antsirabe
+C018,1,6,1,150000,10,38,M,Fianarantsoa
+C019,1,5,1,180000,10,24,F,Antsirabe
+C020,3,4,1,120000,11,22,M,Antananarivo
+C021,3,3,1,90000,11,30,F,Antananarivo
+C022,1,2,1,180000,11,41,M,Toliara
+C023,1,1,1,210000,11,26,F,Mahajanga
+C024,3,0,1,60000,11,25,M,Antsirabe
