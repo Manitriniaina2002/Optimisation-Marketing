@@ -14,8 +14,13 @@ from sklearn.cluster import KMeans
 from sklearn.decomposition import PCA
 from sklearn.metrics import silhouette_score, calinski_harabasz_score, davies_bouldin_score
 from sklearn.model_selection import train_test_split
-from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
-from xgboost import XGBClassifier, XGBRegressor
+from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor, GradientBoostingClassifier
+# Try optional xgboost imports
+try:
+    from xgboost import XGBClassifier, XGBRegressor  # type: ignore
+except Exception:  # pragma: no cover
+    XGBClassifier = None  # type: ignore
+    XGBRegressor = None  # type: ignore
 from sklearn.metrics import classification_report, mean_squared_error, r2_score
 import logging
 

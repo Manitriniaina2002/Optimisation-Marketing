@@ -11,5 +11,4 @@ openpyxl
 pillow
 streamlit-option-menu
 streamlit-extras
-streamlit-pandas-profiling
 chardet

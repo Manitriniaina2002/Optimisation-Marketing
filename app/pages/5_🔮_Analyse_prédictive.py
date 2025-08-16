@@ -19,7 +19,7 @@ from sklearn.metrics import (
     accuracy_score, precision_score, recall_score, f1_score, 
     roc_auc_score, confusion_matrix, classification_report, roc_curve, auc
 )
-from xgboost import XGBClassifier
+# from xgboost import XGBClassifier  # lazy-imported when selected
 from sklearn.preprocessing import LabelEncoder, StandardScaler
 from sklearn.preprocessing import label_binarize
 
@@ -447,16 +447,22 @@ with st.expander("🤖 Entraînement du modèle", expanded=False):
                         verbose=0
                     )
                 else:  # XGBoost
-                    model = XGBClassifier(
-                        n_estimators=n_estimators,
-                        max_depth=max_depth,
-                        min_child_weight=min_samples_leaf,
-                        subsample=0.8,
-                        colsample_bytree=0.8,
-                        random_state=model_data['preprocessing']['random_state'],
-                        n_jobs=-1,
-                        verbosity=0
-                    )
+                    try:
+                        from xgboost import XGBClassifier  # lazy import
+                        model = XGBClassifier(
+                            n_estimators=n_estimators,
+                            max_depth=max_depth,
+                            min_child_weight=min_samples_leaf,
+                            subsample=0.8,
+                            colsample_bytree=0.8,
+                            random_state=model_data['preprocessing']['random_state'],
+                            n_jobs=-1,
+                            verbosity=0
+                        )
+                    except Exception as e:
+                        st.error("XGBoost n'est pas disponible dans cet environnement.")
+                        st.info("Sélectionnez 'Forêt aléatoire' ou 'Gradient Boosting', ou ajoutez 'xgboost' aux requirements si nécessaire.")
+                        st.stop()
                 
                 # Entraîner le modèle
                 model.fit(X_train, y_train)
